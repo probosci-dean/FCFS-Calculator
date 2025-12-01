@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FCFS CPU Scheduling Calculator</title>
+
+<style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #eef1f5;
+    }
+
+    header {
+        background: #1f2937;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 28px;
+    }
+
+    header p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 900px;
+        background: white;
+        padding: 20px;
+        margin: 25px auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    th {
+        background: #374151;
+        color: white;
+        padding: 10px;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    table input {
+        width: 90%;
+        padding: 5px;
+    }
+
+    .button-group {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+    }
+
+    .btn-add {
+        background: #10b981;
+        color: white;
+    }
+    .btn-add:hover { background: #0a966a; }
+
+    .btn-generate {
+        background: #2563eb;
+        color: white;
+    }
+    .btn-generate:hover { background: #1e48b6; }
+
+    .delete-btn {
+        background: #dc2626;
+        color: white;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .delete-btn:hover { background: #b91c1c; }
+
+    .gantt-container {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .gantt-block {
+        padding: 10px;
+        background: #d1d5db;
+        border-radius: 5px;
+        border: 1px solid #555;
+        min-width: 80px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .footer-time {
+        font-size: 12px;
+        text-align: center;
+        margin-top: -5px;
+    }
+</style>
+
+</head>
+<body>
+
+<header>
+    <h1>FCFS CPU Scheduling Calculator</h1>
+    <p>A simple educational tool for simulating the First-Come, First-Serve CPU scheduling algorithm.</p>
+</header>
+
+<div class="container">
+
+    <h2>Enter Processes</h2>
+
+    <table>
+        <tr>
+            <th>Process Name</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+            <th>Action</th>
+        </tr>
+        <tbody id="processTable"></tbody>
+    </table>
+
+    <div class="button-group">
+        <button class="btn btn-add" onclick="addProcess()">Add Process</button>
+        <button class="btn btn-generate" onclick="calculateFCFS()">Generate Results</button>
+    </div>
+
+    <h2>FCFS Results</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Process</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Start Time</th>
+                <th>Completion</th>
+                <th>Turnaround</th>
+                <th>Waiting</th>
+            </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+    </table>
+
+    <h2>Gantt Chart</h2>
+    <div id="ganttChart" class="gantt-container"></div>
+
+</div>
+
+<script>
+let processCount = 0;
+
+function addProcess() {
+    processCount++;
+    const table = document.getElementById("processTable");
+
+    let defaultName = "P" + processCount;
+
+    let row = `
+        <tr>
+            <td><input type="text" id="p${processCount}" value="${defaultName}" /></td>
+            <td><input type="number" id="a${processCount}" min="0" /></td>
+            <td><input type="number" id="b${processCount}" min="1" /></td>
+            <td><button class="delete-btn" onclick="this.parentNode.parentNode.remove()">Delete</button></td>
+        </tr>
+    `;
+
+    table.insertAdjacentHTML("beforeend", row);
+}
+
+function calculateFCFS() {
+    let processes = [];
+    const rows = document.querySelectorAll("#processTable tr");
+
+    // Error: No processes
+    if (rows.length === 0) {
+        alert("Error: Please add at least one process.");
+        return;
+    }
+
+    // Collect data
+    for (let i = 0; i < rows.length; i++) {
+        let name = rows[i].children[0].children[0].value.trim();
+        const arrival = rows[i].children[1].children[0].value;
+        const burst = rows[i].children[2].children[0].value;
+
+        if (name === "") {
+            name = "P" + (i + 1); // fallback name
+        }
+        if (arrival === "" || burst === "") {
+            alert("Error: Arrival Time and Burst Time must not be empty.");
+            return;
+        }
+        if (arrival < 0 || burst <= 0) {
+            alert("Error: Arrival must be ≥0 and Burst must be >0.");
+            return;
+        }
+
+        processes.push({
+            name,
+            arrival: parseInt(arrival),
+            burst: parseInt(burst)
+        });
+    }
+
+    // Sort by arrival
+    processes.sort((a, b) => a.arrival - b.arrival);
+
+    let time = 0;
+    let result = [];
+    let ganttHTML = "";
+
+    processes.forEach(p => {
+        let start = Math.max(time, p.arrival);
+        let completion = start + p.burst;
+        let tat = completion - p.arrival;
+        let wt = tat - p.burst;
+
+        result.push({ ...p, start, completion, tat, wt });
+
+        ganttHTML += `
+            <div>
+                <div class="gantt-block">${p.name}</div>
+                <div class="footer-time">${start} - ${completion}</div>
+            </div>
+        `;
+
+        time = completion;
+    });
+
+    // Render Table
+    const resultTable = document.getElementById("resultTable");
+    resultTable.innerHTML = "";
+    result.forEach(r => {
+        resultTable.innerHTML += `
+            <tr>
+                <td>${r.name}</td>
+                <td>${r.arrival}</td>
+                <td>${r.burst}</td>
+                <td>${r.start}</td>
+                <td>${r.completion}</td>
+                <td>${r.tat}</td>
+                <td>${r.wt}</td>
+            </tr>
+        `;
+    });
+
+    // Render Gantt Chart
+    document.getElementById("ganttChart").innerHTML = ganttHTML;
+}
+</script>
+
+</body>
+</html>
