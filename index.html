@@ -1,305 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FCFS CPU Scheduling Calculator</title>
 
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background: #eef1f5;
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #eef1f5;
+  }
+
+  header {
+    background: #1f2937;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .app-card {
+    background: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* table inputs fill the cell */
+  .table input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* delete button style preserved */
+  .delete-btn {
+    background: #dc2626;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+  }
+
+  /* Gantt chart: allow wrapping on small screens */
+  .gantt-container {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    flex-wrap: wrap;           /* allow wrapping so it fits on small screens */
+    align-items: flex-end;
+  }
+
+  .gantt-block {
+    padding: 8px 10px;
+    background: #d1d5db;
+    border-radius: 6px;
+    border: 1px solid #555;
+    min-width: 56px;           /* small min width for phones */
+    text-align: center;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .footer-time {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* Make action buttons full-width on xs devices */
+  @media (max-width: 575.98px) {
+    .btn-action {
+      width: 100%;
+      margin-bottom: 8px;
     }
-
-    header {
-        background: #1f2937;
-        color: white;
-        padding: 20px;
-        text-align: center;
-    }
-
-    header h1 {
-        margin: 0;
-        font-size: 28px;
-    }
-
-    header p {
-        margin: 5px 0 0;
-        font-size: 14px;
-        opacity: 0.8;
-    }
-
-    .container {
-        width: 90%;
-        max-width: 900px;
-        background: white;
-        padding: 20px;
-        margin: 25px auto;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-        text-align: center;
-        margin-top: 0;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-
-    table th, table td {
-        border: 1px solid #ccc;
-        padding: 10px;
-        text-align: center;
-    }
-
-    .btn-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 15px;
-        flex-wrap: wrap;
-    }
-
-    button {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    button:hover {
-        background: #1d4ed8;
-    }
-
-    #ganttChart {
-        display: flex;
-        margin-top: 20px;
-        overflow-x: auto;
-        padding-bottom: 10px;
-    }
-
-    .gantt-box {
-        padding: 8px 12px;
-        background: #4ade80;
-        color: black;
-        border: 1px solid #333;
-        text-align: center;
-        margin-right: 4px;
-        min-width: 70px;
-    }
-
-    /* ------------------------------- */
-    /* 📱 RESPONSIVE DESIGN SECTION   */
-    /* ------------------------------- */
-
-    @media (max-width: 700px) {
-        header h1 {
-            font-size: 22px;
-        }
-
-        .container {
-            padding: 15px;
-        }
-
-        table th, table td {
-            padding: 8px;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            margin-top: 5px;
-        }
-
-        .btn-container {
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .gantt-box {
-            min-width: 60px;
-            font-size: 13px;
-            padding: 6px;
-        }
-    }
-
-    @media (max-width: 450px) {
-        header h1 {
-            font-size: 20px;
-        }
-
-        header p {
-            font-size: 12px;
-        }
-
-        table th, table td {
-            font-size: 12px;
-        }
-    }
+  }
 </style>
-
-
 </head>
 <body>
 
 <header>
-    <h1>FCFS CPU Scheduling Calculator</h1>
-    <p>A simple educational tool for simulating the First-Come, First-Serve CPU scheduling algorithm.</p>
+  <h1 class="mb-0">FCFS CPU Scheduling Calculator</h1>
+  <p class="mb-0">Educational tool for First-Come, First-Serve scheduling (mobile-friendly)</p>
 </header>
 
-<div class="container">
+<div class="container app-card">
 
-    <h2>Enter Processes</h2>
+  <!-- Processes section -->
+  <h4 class="mb-3">Enter Processes</h4>
 
-    <table>
+  <!-- responsive table wrapper -->
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle" id="processTable">
+      <thead class="table-dark">
         <tr>
-            <th>Process Name</th>
-            <th>Arrival Time</th>
-            <th>Burst Time</th>
-            <th>Action</th>
+          <th style="width: 35%;">Process Name</th>
+          <th style="width: 20%;">Arrival Time</th>
+          <th style="width: 20%;">Burst Time</th>
+          <th style="width: 25%;">Action</th>
         </tr>
-        <tbody id="processTable"></tbody>
+      </thead>
+      <tbody id="processTableBody">
+        <!-- rows added by JS -->
+      </tbody>
     </table>
+  </div>
 
-    <div class="button-group">
-        <button class="btn btn-add" onclick="addProcess()">Add Process</button>
-        <button class="btn btn-generate" onclick="calculateFCFS()">Generate Results</button>
-    </div>
+  <!-- buttons: stacked on small -->
+  <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 my-3">
+    <button class="btn btn-success btn-action" id="addBtn">Add Process</button>
+    <button class="btn btn-primary btn-action" id="genBtn">Generate Results</button>
+  </div>
 
-    <h2>FCFS Results</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Process</th>
-                <th>Arrival Time</th>
-                <th>Burst Time</th>
-                <th>Start Time</th>
-                <th>Completion</th>
-                <th>Turnaround</th>
-                <th>Waiting</th>
-            </tr>
-        </thead>
-        <tbody id="resultTable"></tbody>
+  <!-- Results table -->
+  <h4 class="mt-4 mb-2">FCFS Results</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Process</th>
+          <th>Arrival Time</th>
+          <th>Burst Time</th>
+          <th>Start Time</th>
+          <th>Completion</th>
+          <th>Turnaround</th>
+          <th>Waiting</th>
+        </tr>
+      </thead>
+      <tbody id="resultTable"></tbody>
     </table>
+  </div>
 
-    <h2>Gantt Chart</h2>
-    <div id="ganttChart" class="gantt-container"></div>
+  <!-- Gantt -->
+  <h4 class="mt-4 mb-2">Gantt Chart</h4>
+  <div id="ganttChart" class="gantt-container"></div>
 
 </div>
 
 <script>
-let processCount = 0;
+  // keep original logic, but improved DOM targets & safety
+  let processCount = 0;
 
-function addProcess() {
+  const addBtn = document.getElementById('addBtn');
+  const genBtn = document.getElementById('genBtn');
+  const processTableBody = document.getElementById('processTableBody');
+  const resultTable = document.getElementById('resultTable');
+  const ganttChart = document.getElementById('ganttChart');
+
+  addBtn.addEventListener('click', addProcess);
+  genBtn.addEventListener('click', calculateFCFS);
+
+  function addProcess() {
     processCount++;
-    const table = document.getElementById("processTable");
+    const defaultName = 'P' + processCount;
 
-    let defaultName = "P" + processCount;
+    const tr = document.createElement('tr');
 
-    let row = `
-        <tr>
-            <td><input type="text" id="p${processCount}" value="${defaultName}" /></td>
-            <td><input type="number" id="a${processCount}" min="0" /></td>
-            <td><input type="number" id="b${processCount}" min="1" /></td>
-            <td><button class="delete-btn" onclick="this.parentNode.parentNode.remove()">Delete</button></td>
-        </tr>
+    tr.innerHTML = `
+      <td><input type="text" id="p${processCount}" value="${defaultName}" class="form-control form-control-sm" /></td>
+      <td><input type="number" id="a${processCount}" min="0" class="form-control form-control-sm" /></td>
+      <td><input type="number" id="b${processCount}" min="1" class="form-control form-control-sm" /></td>
+      <td>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="button" class="delete-btn" title="Delete row">Delete</button>
+        </div>
+      </td>
     `;
 
-    table.insertAdjacentHTML("beforeend", row);
-}
+    // attach delete handler
+    tr.querySelector('.delete-btn').addEventListener('click', () => tr.remove());
 
-function calculateFCFS() {
-    let processes = [];
-    const rows = document.querySelectorAll("#processTable tr");
+    processTableBody.appendChild(tr);
 
-    // Error: No processes
+    // focus the arrival time input for quicker entry on mobile
+    const arrivalInput = tr.querySelector(`#a${processCount}`);
+    if (arrivalInput) arrivalInput.focus();
+  }
+
+  function calculateFCFS() {
+    const rows = Array.from(processTableBody.querySelectorAll('tr'));
     if (rows.length === 0) {
-        alert("Error: Please add at least one process.");
-        return;
+      alert('Please add at least one process.');
+      return;
     }
 
-    // Collect data
+    const processes = [];
+
     for (let i = 0; i < rows.length; i++) {
-        let name = rows[i].children[0].children[0].value.trim();
-        const arrival = rows[i].children[1].children[0].value;
-        const burst = rows[i].children[2].children[0].value;
+      const row = rows[i];
+      const nameInput = row.querySelector('td:nth-child(1) input');
+      const arrivalInput = row.querySelector('td:nth-child(2) input');
+      const burstInput = row.querySelector('td:nth-child(3) input');
 
-        if (name === "") {
-            name = "P" + (i + 1); // fallback name
-        }
-        if (arrival === "" || burst === "") {
-            alert("Error: Arrival Time and Burst Time must not be empty.");
-            return;
-        }
-        if (arrival < 0 || burst <= 0) {
-            alert("Error: Arrival must be ≥0 and Burst must be >0.");
-            return;
-        }
+      const name = (nameInput?.value || '').trim();
+      const arrival = arrivalInput?.value;
+      const burst = burstInput?.value;
 
-        processes.push({
-            name,
-            arrival: parseInt(arrival),
-            burst: parseInt(burst)
-        });
+      if (arrival === '' || burst === '') {
+        alert('Arrival Time and Burst Time must not be empty.');
+        return;
+      }
+
+      const at = Number(arrival);
+      const bt = Number(burst);
+
+      if (!Number.isFinite(at) || !Number.isFinite(bt) || at < 0 || bt <= 0) {
+        alert('Arrival must be ≥ 0 and Burst must be > 0.');
+        return;
+      }
+
+      processes.push({
+        name: name || `P${i+1}`,
+        arrival: at,
+        burst: bt
+      });
     }
 
-    // Sort by arrival
-    processes.sort((a, b) => a.arrival - b.arrival);
+    // FCFS by arrival
+    processes.sort((a,b) => a.arrival - b.arrival);
 
+    // compute times
     let time = 0;
-    let result = [];
-    let ganttHTML = "";
+    const results = [];
+    let ganttHTML = '';
 
     processes.forEach(p => {
-        let start = Math.max(time, p.arrival);
-        let completion = start + p.burst;
-        let tat = completion - p.arrival;
-        let wt = tat - p.burst;
+      const start = Math.max(time, p.arrival);
+      const completion = start + p.burst;
+      const tat = completion - p.arrival;
+      const wt = tat - p.burst;
 
-        result.push({ ...p, start, completion, tat, wt });
+      results.push({ ...p, start, completion, tat, wt });
 
-        ganttHTML += `
-            <div>
-                <div class="gantt-block">${p.name}</div>
-                <div class="footer-time">${start} - ${completion}</div>
-            </div>
-        `;
+      // Gantt block (name and times)
+      ganttHTML += `
+        <div class="gantt-block">
+          <div>${p.name}</div>
+          <div class="footer-time">${start} - ${completion}</div>
+        </div>
+      `;
 
-        time = completion;
+      time = completion;
     });
 
-    // Render Table
-    const resultTable = document.getElementById("resultTable");
-    resultTable.innerHTML = "";
-    result.forEach(r => {
-        resultTable.innerHTML += `
-            <tr>
-                <td>${r.name}</td>
-                <td>${r.arrival}</td>
-                <td>${r.burst}</td>
-                <td>${r.start}</td>
-                <td>${r.completion}</td>
-                <td>${r.tat}</td>
-                <td>${r.wt}</td>
-            </tr>
-        `;
+    // render results table
+    resultTable.innerHTML = '';
+    results.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.name}</td>
+        <td>${r.arrival}</td>
+        <td>${r.burst}</td>
+        <td>${r.start}</td>
+        <td>${r.completion}</td>
+        <td>${r.tat}</td>
+        <td>${r.wt}</td>
+      `;
+      resultTable.appendChild(tr);
     });
 
-    // Render Gantt Chart
-    document.getElementById("ganttChart").innerHTML = ganttHTML;
-}
+    // render gantt
+    ganttChart.innerHTML = ganttHTML;
+  }
+
+  // Optional: add a default sample row so users see the form immediately on mobile
+  // Uncomment the next line if you'd like a default starter row:
+  // addProcess();
 </script>
+
+<!-- Bootstrap bundle (optional for some Bootstrap JS features) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
-
